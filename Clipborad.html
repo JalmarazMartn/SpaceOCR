@@ -118,7 +118,7 @@
         formdata.append("language", "eng");
         formdata.append("isOverlayRequired", "false");
         //formdata.append("url", "http://dl.a9t9.com/ocrbenchmark/eng.png");
-        formdata.append("base64Image",'data:image/bmp;base64,' + base64data);
+        formdata.append("base64Image", 'data:image/bmp;base64,' + base64data);
         formdata.append("iscreatesearchablepdf", "false");
         formdata.append("issearchablepdfhidetextlayer", "false");
 
@@ -131,8 +131,22 @@
 
         fetch("https://api.ocr.space/parse/image", requestOptions)
             .then(response => response.text())
-            .then(result => document.getElementById("textarea").value = result)
+            .then(result => {
+                document.getElementById("textarea").value = result;
+                var regexp = /\b84\d{16}\b/g;
+                document.getElementById("textarea").value = findSubstring(result, regexp);
+            })
             .catch(error => console.log('error', error));
+    }
+    //find if the string contains the regexp and returns first match
+    function findSubstring(str, regexp) {
+        var json = JSON.parse(str);
+        var parsedText = json.ParsedResults[0].ParsedText;
+        var match = parsedText.match(regexp);
+        if (match) {
+            return match[0];
+        }
+        return str;
     }
 </script>
 </body>
