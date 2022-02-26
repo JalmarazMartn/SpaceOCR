@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+
+<body>
+    <div>
+        <button onclick="pasteImageBitmap()">Paste image bitmap from clipboard</button>
+    </div>
+    <div>
+        <button onclick="sendImage()">Send image to ocr space</button>
+    </div>
+    <div>
+        <textarea id="textbox" rows="20" cols="100"></textarea>
+    </div>
+    <div>
+        <textarea id="textarea" rows="10" cols="100">
+        </textarea>
+    </div>
+</body>
+<script>
+
+    var ClipboardUtils = new function () {
+        var permissions = {
+            'image/bmp': true,
+            'image/gif': true,
+            'image/png': true,
+            'image/jpeg': true,
+            'image/tiff': true
+        };
+
+        function getType(types) {
+            for (var j = 0; j < types.length; ++j) {
+                var type = types[j];
+                if (permissions[type]) {
+                    return type;
+                }
+            }
+            return null;
+        }
+        function getItem(items) {
+            for (var i = 0; i < items.length; ++i) {
+                var item = items[i];
+                if (item) {
+                    var type = getType(item.types);
+                    if (type) {
+                        return item.getType(type);
+                    }
+                }
+            }
+            return null;
+        }
+        function loadFile(file, callback) {
+            if (window.FileReader) {
+                var reader = new FileReader();
+                reader.onload = function () {
+                    callback(reader.result, null);
+                };
+                reader.onerror = function () {
+                    callback(null, 'Incorrect file.');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                callback(null, 'File api is not supported.');
+            }
+        }
+
+        this.readImage = function (callback) {
+            if (navigator.clipboard) {
+                var promise = navigator.clipboard.read();
+                promise
+                    .then(function (items) {
+                        var promise = getItem(items);
+                        if (promise == null) {
+                            callback(null, null);
+                            return;
+                        }
+                        promise
+                            .then(function (result) {
+                                loadFile(result, callback);
+                            })
+                            .catch(function (error) {
+                                callback(null, 'Reading clipboard error.');
+                            });
+                    })
+                    .catch(function (error) {
+                        callback(null, 'Reading clipboard error.');
+                    });
+            } else {
+                callback(null, 'Clipboard is not supported.');
+            }
+        };
+    };
+
+    // Usage example:
+    function pasteImageBitmap() {
+        ClipboardUtils.readImage(function (data, error) {
+            if (error) {
+                console.log(error);
+                return;
+            }
+            if (data) {
+                //window.alert(data);
+                //get the image data in base 64
+                var index = data.indexOf(",");
+                var imageData = data.substring(index + 1);
+                document.getElementById("textbox").value = imageData;
+                sendImage();
+                return;
+            }
+            console.log('Image bitmap is not avaialble - copy it to clipboard.');
+        });
+    }
+    function sendImage() {
+        var base64data = document.getElementById("textbox").value;
+        var myHeaders = new Headers();
+        myHeaders.append("apikey", "helloworld");
+
+        var formdata = new FormData();
+        formdata.append("language", "eng");
+        formdata.append("isOverlayRequired", "false");
+        //formdata.append("url", "http://dl.a9t9.com/ocrbenchmark/eng.png");
+        formdata.append("base64Image",'data:image/bmp;base64,' + base64data);
+        formdata.append("iscreatesearchablepdf", "false");
+        formdata.append("issearchablepdfhidetextlayer", "false");
+
+        var requestOptions = {
+            method: 'POST',
+            headers: myHeaders,
+            body: formdata,
+            redirect: 'follow'
+        };
+
+        fetch("https://api.ocr.space/parse/image", requestOptions)
+            .then(response => response.text())
+            .then(result => document.getElementById("textarea").value = result)
+            .catch(error => console.log('error', error));
+    }
+</script>
+</body>
+
+</html>
