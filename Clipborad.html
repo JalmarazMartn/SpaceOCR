@@ -116,8 +116,11 @@
     function sendImage() {
         var base64data = document.getElementById("textbox").value;
         var myHeaders = new Headers();
-        myHeaders.append("apikey", "helloworld");
-
+        var apikey = document.getElementById("apikey").value;
+        if (apikey == "") {
+            apikey='helloworld';
+        }
+        myHeaders.append("apikey", apikey);
         var formdata = new FormData();
         formdata.append("language", "eng");
         formdata.append("isOverlayRequired", "false");
