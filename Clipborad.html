@@ -148,6 +148,14 @@
         }
         return str;
     }
+    //function that save in cookies a text box value. Parameter element in html
+    function saveCookie(element) {
+        var name = element.id;
+        var value = element.value;
+        var days = 30;
+        var expires = "";
+        document.cookie = name + "=" + value + "; " + expires;
+    }                            
 </script>
 </body>
 
