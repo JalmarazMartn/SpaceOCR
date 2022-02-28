@@ -2,27 +2,37 @@
 <html>
 
 <body>
-    apikey
+    Space OCR apikey (helloword test apikey if blank)
     <input type="text" id="apikey" value="">
     <br>
     </br>
+    Pattern description
+    <input type="text" id="regexpDesc" value="">
+    Pattern regexp
+    <input type="text" id="regexp" value="" cols="100">
+    <br></br>
     <div>
         <button onclick="pasteImageBitmap()">Paste image bitmap from clipboard</button>
     </div>
-    <div>
-        <button onclick="sendImage()">Send image to ocr space</button>
-    </div>
-    <div>
-        <textarea id="textbox" rows="20" cols="100"></textarea>
-    </div>
+    <br></br>
+    Search result
     <div>
         <textarea id="textarea" rows="10" cols="100">
         </textarea>
+    </div>
+    Link to regexp101
+    <a href="https://regex101.com/" target="_blank">regex101</a>
+    <br></br>
+    Clipbloard content in base 64
+    <div>
+        <textarea id="textbox" rows="20" cols="100"></textarea>
     </div>
 </body>
 <script>
     document.addEventListener("DOMContentLoaded", function (event) {
         document.getElementById('apikey').value = getCookie('apikey');
+        document.getElementById('regexpDesc').value = getCookie('regexpDesc');
+        document.getElementById('regexp').value = getCookie('regexp');
     });
 
     var ClipboardUtils = new function () {
@@ -124,6 +134,8 @@
         }
         myHeaders.append("apikey", apikey);
         setCookie(document.getElementById("apikey"),30);
+        setCookie(document.getElementById("regexpDesc"),30);
+        setCookie(document.getElementById("regexp"),30);
         var formdata = new FormData();
         formdata.append("language", "eng");
         formdata.append("isOverlayRequired", "false");
@@ -144,6 +156,9 @@
             .then(result => {
                 document.getElementById("textarea").value = result;
                 var regexp = /\b84\d{16}\b/g;
+                if (!document.getElementById("regexp").value == "") {
+                    regexp = new RegExp(document.getElementById("regexp").value, "g");
+                }
                 document.getElementById("textarea").value = findSubstring(result, regexp);
             })
             .catch(error => console.log('error', error));
