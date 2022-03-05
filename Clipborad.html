@@ -133,9 +133,9 @@
             apikey = 'helloworld';
         }
         myHeaders.append("apikey", apikey);
-        setCookie(document.getElementById("apikey"),30);
-        setCookie(document.getElementById("regexpDesc"),30);
-        setCookie(document.getElementById("regexp"),30);
+        setCookie(document.getElementById("apikey"), 30);
+        setCookie(document.getElementById("regexpDesc"), 30);
+        setCookie(document.getElementById("regexp"), 30);
         var formdata = new FormData();
         formdata.append("language", "eng");
         formdata.append("isOverlayRequired", "false");
@@ -170,14 +170,32 @@
             return str;
         }
         var parsedText = json.ParsedResults[0].ParsedText;
-        var match = RegExp(regexp).exec(parsedText,'gm');
-        if (!match) {
+        //get all matches of the regexp
+        var matches = ArrayOfMatchesFromRegexp(regexp,parsedText);
+        if (matches.length == 0) {
             return parsedText;
         }
-        if (match.length > 1) {
-            return match[1];
+        var allMatchesString = "";
+        for (i = 0; i < matches.length; i++) {
+            var match = matches[i];
+            if (match.length > 1) {                
+                allMatchesString += match[1] + "\n";
+            }
+            else {
+                allMatchesString += match[0] + "\n";
+            }
         }
-        return match[0];
+        return allMatchesString;
+    }
+    function ArrayOfMatchesFromRegexp(regexp, str) {
+        var matches = [];
+        do {
+            var match = regexp.exec(str);
+            if (match) {
+                matches.push(match);
+            }
+        } while (match);
+        return matches;
     }
     function setCookie(element, exdays) {
         const d = new Date();
