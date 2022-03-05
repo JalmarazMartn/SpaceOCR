@@ -110,7 +110,7 @@
     function pasteImageBitmap() {
         ClipboardUtils.readImage(function (data, error) {
             if (error) {
-                console.log(error);
+                alert(error);
                 return;
             }
             if (data) {
@@ -122,7 +122,7 @@
                 sendImage();
                 return;
             }
-            console.log('Image bitmap is not avaialble - copy it to clipboard.');
+            alert('Image bitmap is not avaialble - copy it to clipboard.');
         });
     }
     function sendImage() {
@@ -155,23 +155,29 @@
             .then(response => response.text())
             .then(result => {
                 document.getElementById("textarea").value = result;
-                var regexp = /\b84\d{16}\b/g;
+                var regexp = '';
                 if (!document.getElementById("regexp").value == "") {
-                    regexp = new RegExp(document.getElementById("regexp").value, "g");
+                    regexp = new RegExp(document.getElementById("regexp").value, "gm");
                 }
                 document.getElementById("textarea").value = findSubstring(result, regexp);
             })
-            .catch(error => console.log('error', error));
+            .catch(error => alert('error' + error));
     }
     //find if the string contains the regexp and returns first match
     function findSubstring(str, regexp) {
         var json = JSON.parse(str);
-        var parsedText = json.ParsedResults[0].ParsedText;
-        var match = parsedText.match(regexp);
-        if (match) {
-            return match[0];
+        if (!json.ParsedResults[0].ParsedText) {
+            return str;
         }
-        return str;
+        var parsedText = json.ParsedResults[0].ParsedText;
+        var match = RegExp(regexp).exec(parsedText,'gm');
+        if (!match) {
+            return parsedText;
+        }
+        if (match.length > 1) {
+            return match[1];
+        }
+        return match[0];
     }
     function setCookie(element, exdays) {
         const d = new Date();
